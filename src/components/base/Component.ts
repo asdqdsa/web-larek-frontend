@@ -60,6 +60,12 @@ export abstract class Component<T> {
 		}
 	}
 
+	protected setDescription(element?: HTMLSpanElement, value?: unknown) {
+		if (element) {
+			element.textContent = String(value);
+		}
+	}
+
 	// Вернуть корневой DOM-элемент
 	render(data?: Partial<T>): HTMLElement {
 		Object.assign(this as object, data ?? {});

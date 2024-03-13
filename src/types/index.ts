@@ -7,6 +7,7 @@ export interface ICatalogItem {
 	title: string;
 	category: string;
 	price: number | null;
+	status: boolean;
 }
 
 // types for API
@@ -46,6 +47,8 @@ export interface ICard<T> {
 	title: string;
 	category: string;
 	price: number | null;
+	description?: string;
+	statusBtn: boolean;
 	// status: T;
 }
 

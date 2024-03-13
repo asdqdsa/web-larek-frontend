@@ -7,7 +7,9 @@ export class Card<T> extends Component<ICard<T>> {
 	protected _image: HTMLImageElement;
 	protected _price: HTMLSpanElement;
 	protected _category: HTMLSpanElement;
-	// protected _description?: HTMLElement;
+	protected _description?: HTMLParagraphElement;
+	protected _button?: HTMLButtonElement;
+	protected _statusBtn: boolean;
 
 	constructor(
 		protected blockName: string,
@@ -29,6 +31,35 @@ export class Card<T> extends Component<ICard<T>> {
 			`.${blockName}__category`,
 			container
 		);
+		this._description = container.querySelector(`.${blockName}__text`);
+		this._button = container.querySelector(`.${blockName}__button`);
+		// this._statusBtn =
+		if (actions?.onClick) {
+			if (this._button) {
+				this._button.addEventListener('click', actions.onClick);
+			} else {
+				container.addEventListener('click', actions.onClick);
+			}
+			// this.container.addEventListener('click', actions.onClick);
+			console.log(this.statusBtn);
+			if (this.statusBtn) {
+				this.setDisabled(this._button, this._statusBtn);
+				console.log('disable');
+			} else {
+				console.log('enable');
+			}
+		}
+	}
+
+	get button(): HTMLButtonElement {
+		return this._button;
+	}
+
+	get statusBtn(): boolean {
+		return this._statusBtn;
+	}
+	set statusBtn(value: boolean) {
+		this._statusBtn = value;
 	}
 
 	set id(value: string) {
@@ -67,10 +98,23 @@ export class Card<T> extends Component<ICard<T>> {
 	set category(value: string) {
 		this.setCategory(this._category, value);
 	}
+
+	get description(): string {
+		return this._category.textContent || '';
+	}
+
+	set description(value: string) {
+		this.setDescription(this._description, value);
+	}
+
+	// get status(): any {
+	// 	return this._status
+	// }
 }
 
 export class CatalogItem extends Card<CatalogItemStatus> {
 	protected _status: HTMLElement;
+	// protected _statusBtn: boolean;
 
 	constructor(container: HTMLElement, actions?: ICardActions) {
 		super('card', container, actions);
