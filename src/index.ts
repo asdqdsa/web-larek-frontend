@@ -6,13 +6,16 @@ import { StoreAPI } from './components/StoreAPI';
 import { AppState } from './components/AppData';
 import { Page } from './components/Page';
 import { ensureElement, cloneTemplate } from './utils/utils';
-import { CatalogChangeEvent, ICatalogItem } from './types';
-import { CatalogItem } from './components/Card';
+import { CatalogChangeEvent, ICatalogItem, ICartItem } from './types';
+import { Card as CatalogItem, CartItem } from './components/Card';
 import { Modal } from './components/Modal';
+import { ShoppingCart } from './components/shoppingCart';
 
 const events = new EventEmitter();
 const api = new StoreAPI({ items, images });
 const appData = new AppState({}, events);
+
+events.onAll(({ eventName, data }) => console.log(eventName, data));
 
 const page = new Page(document.body, events);
 const modal = new Modal(ensureElement<HTMLElement>('#modal-container'), events);
@@ -20,6 +23,10 @@ const modal = new Modal(ensureElement<HTMLElement>('#modal-container'), events);
 // templates
 const cardCatalogTemplate = ensureElement<HTMLTemplateElement>('#card-catalog');
 const cardPreviewTemplate = ensureElement<HTMLTemplateElement>('#card-preview');
+const cartTemplate = ensureElement<HTMLTemplateElement>('#basket');
+const itemCartTemplate = ensureElement<HTMLTemplateElement>('#card-basket');
+
+const shoppingCart = new ShoppingCart(cloneTemplate(cartTemplate), events);
 
 // Изменились элементы каталога
 events.on<CatalogChangeEvent>('items:changed', () => {
@@ -37,9 +44,30 @@ events.on<CatalogChangeEvent>('items:changed', () => {
 	});
 });
 
+// show cart
+events.on('cart:open', (event) => {
+	console.log(event);
+	// const showItem = ()
+	appData.setCartPreview();
+});
+
+events.on('cart:preview', (cartState: Set<string>) => {
+	const prevCart = (cartState: Set<string>) => {
+		const cartItem = new CartItem(cloneTemplate(itemCartTemplate), {
+			onClick: () => events.emit('cart:remove'),
+		});
+
+		// modal.render({
+		// 	content: cartItem.render({
+		// 		title:
+		// 	})
+		// })
+	};
+});
+
 // show modal card
 events.on('card:select', (item: ICatalogItem) => {
-	console.log('selected');
+	// console.log('selected');
 	appData.setPreview(item);
 });
 
@@ -78,7 +106,7 @@ events.on('preview:changed', (item: ICatalogItem) => {
 events.on('preview:process', (item: ICatalogItem) => {
 	const showItem = (item: ICatalogItem) => {
 		const card = new CatalogItem(cloneTemplate(cardPreviewTemplate));
-		console.log(card.button);
+		// console.log(card.button);
 		card.button.disabled = item.status;
 		modal.render({ content: card.render({ ...item }) });
 	};
@@ -99,25 +127,31 @@ events.on('preview:process', (item: ICatalogItem) => {
 
 // Блокируем прокрутку страницы если открыта модалка
 events.on('modal:open', () => {
-	console.log('modal:openn');
+	// console.log('modal:openn');
 	page.locked = true;
 });
 
 // ... и разблокируем
 events.on('modal:close', () => {
-	console.log('modal:closee');
+	// console.log('modal:closee');
 	page.locked = false;
 });
 
 events.on('cart:changed', (item: ICatalogItem) => {
-	console.log('cart:changeddd');
-	console.log(item.status);
+	// console.log('cart:changeddd');
+	// console.log(item.status);
 	if (!item.status) {
 		appData.addItemCart(item);
+		// appData.updateCartCounter();
 		appData.setPreview(item);
 	} else {
 		console.log('indexts no!');
 	}
+});
+
+events.on('cart:updateCounter', (count) => {
+	console.log(count);
+	page.cartCounter = Object.values(count);
 });
 
 api
@@ -125,5 +159,3 @@ api
 	.then(appData.setCatalog.bind(appData))
 	// .then((data) => console.log(data))
 	.catch((error) => console.log(error));
-
-events.onAll(({ eventName, data }) => console.log(eventName, data));

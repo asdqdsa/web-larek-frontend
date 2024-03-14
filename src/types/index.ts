@@ -10,6 +10,12 @@ export interface ICatalogItem {
 	status: boolean;
 }
 
+export interface ICartItem {
+	id: string;
+	title: string;
+	price: number | null;
+}
+
 // types for API
 export type Url = {
 	images: string;

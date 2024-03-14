@@ -1,6 +1,6 @@
 import { Component } from './base/Component';
 import { ensureElement } from '../utils/utils';
-import { ICard, ICardActions, CatalogItemStatus } from '../types';
+import { ICard, ICardActions, CatalogItemStatus, ICartItem } from '../types';
 
 export class Card<T> extends Component<ICard<T>> {
 	protected _title: HTMLElement;
@@ -12,9 +12,9 @@ export class Card<T> extends Component<ICard<T>> {
 	protected _statusBtn: boolean;
 
 	constructor(
-		protected blockName: string,
 		container: HTMLElement,
-		actions?: ICardActions
+		actions?: ICardActions,
+		protected blockName: string = 'card'
 	) {
 		super(container);
 
@@ -31,7 +31,9 @@ export class Card<T> extends Component<ICard<T>> {
 			`.${blockName}__category`,
 			container
 		);
-		this._description = container.querySelector(`.${blockName}__text`);
+		this._description = container.querySelector(
+			`.${blockName}__text`
+		) as HTMLParagraphElement;
 		this._button = container.querySelector(`.${blockName}__button`);
 		// this._statusBtn =
 		if (actions?.onClick) {
@@ -41,12 +43,12 @@ export class Card<T> extends Component<ICard<T>> {
 				container.addEventListener('click', actions.onClick);
 			}
 			// this.container.addEventListener('click', actions.onClick);
-			console.log(this.statusBtn);
+			// console.log(this.statusBtn);
 			if (this.statusBtn) {
 				this.setDisabled(this._button, this._statusBtn);
-				console.log('disable');
+				// console.log('disable');
 			} else {
-				console.log('enable');
+				// console.log('enable');
 			}
 		}
 	}
@@ -112,15 +114,21 @@ export class Card<T> extends Component<ICard<T>> {
 	// }
 }
 
-export class CatalogItem extends Card<CatalogItemStatus> {
+export class CatalogItem1 extends Card<CatalogItemStatus> {
 	protected _status: HTMLElement;
 	// protected _statusBtn: boolean;
 
 	constructor(container: HTMLElement, actions?: ICardActions) {
-		super('card', container, actions);
+		super(container, actions, 'card');
 	}
 
 	set status({ status, label }: CatalogItemStatus) {
 		this.setText(this._status, label);
+	}
+}
+
+export class CartItem extends Card<ICartItem> {
+	constructor(container: HTMLElement, actions?: ICardActions) {
+		super(container, actions, 'card');
 	}
 }
