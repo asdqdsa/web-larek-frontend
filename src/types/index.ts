@@ -14,6 +14,7 @@ export interface ICartItem {
 	id: string;
 	title: string;
 	price: number | null;
+	status: boolean;
 }
 
 // types for API
@@ -49,9 +50,9 @@ export type CatalogItemStatus = {
 
 export interface ICard<T> {
 	// description: string;
-	image: string;
+	image?: string;
 	title: string;
-	category: string;
+	category?: string;
 	price: number | null;
 	description?: string;
 	statusBtn: boolean;

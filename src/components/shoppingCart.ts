@@ -5,6 +5,11 @@ import { EventEmitter } from './base/events';
 export interface IShoppingCart {
 	items: HTMLElement[];
 	price: number;
+	list: HTMLElement[];
+}
+
+export interface ICardActions {
+	onClick: (event: MouseEvent) => void;
 }
 
 export class ShoppingCart extends Component<IShoppingCart> {
@@ -12,7 +17,11 @@ export class ShoppingCart extends Component<IShoppingCart> {
 	protected _price: HTMLElement;
 	protected _button: HTMLElement;
 
-	constructor(container: HTMLElement, protected events: EventEmitter) {
+	constructor(
+		container: HTMLElement,
+		protected events: EventEmitter,
+		actions?: ICardActions
+	) {
 		super(container);
 
 		this._list = ensureElement<HTMLElement>('.basket__list', this.container);
@@ -50,4 +59,8 @@ export class ShoppingCart extends Component<IShoppingCart> {
 	set price(price: number) {
 		this.setText(this._price, price);
 	}
+
+	// set list(items: HTMLElement[]) {
+	// 	this._list.replaceChildren(...items);
+	// }
 }

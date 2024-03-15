@@ -1,4 +1,4 @@
-import { ICatalogItem, IAppState } from '../types';
+import { ICatalogItem, IAppState, ICartItem } from '../types';
 import { Model } from './base/Model';
 
 export class CatalogItem extends Model<ICatalogItem> {
@@ -11,10 +11,20 @@ export class CatalogItem extends Model<ICatalogItem> {
 	status: boolean;
 }
 
+export class CartList extends Model<ICartItem> {
+	id: string;
+	title: string;
+	price: number | null;
+	status: boolean;
+}
+
 export class AppState extends Model<IAppState> {
 	catalog: ICatalogItem[];
+	cartList: ICartItem[];
 	preview: string | null;
-	// cartState: string[];
+	cartItems: ICartItem[];
+	total: number;
+	// cartState: Set<string>;
 
 	setCatalog(items: ICatalogItem[]) {
 		this.catalog = items.map((item) => {
@@ -48,8 +58,36 @@ export class AppState extends Model<IAppState> {
 	}
 
 	setCartPreview() {
-		this.emitChanges('cart:preview', this.cartState);
+		this.cartItems = this.catalog.filter((item) =>
+			[...this.cartState].includes(item.id)
+		);
+		this.getTotal();
+		console.log(this.cartItems);
+		this.emitChanges('cart:preview', { cartState: this.cartItems });
 	}
 
-	// updateCartCounter() {}
+	setCartList(items: ICartItem[]) {
+		this.cartList = items.map((item) => {
+			return new CartList(item, this.events);
+		});
+	}
+
+	getTotal(): number {
+		this.total = this.cartItems.reduce((acc, next) => {
+			return next.price === null ? acc : acc + next.price;
+		}, 0);
+		return this.total;
+	}
+
+	removeCartItem(item: ICartItem): void {
+		item.status = false;
+		this.cartState.delete(item.id);
+		console.log(this.cartItems, 'this');
+		this.getTotal();
+		console.log(this.cartItems);
+		this.emitChanges('cart:open');
+		this.emitChanges('cart:updateCounter', {
+			count: this.cartState.size,
+		});
+	}
 }

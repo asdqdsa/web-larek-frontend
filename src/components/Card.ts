@@ -4,9 +4,9 @@ import { ICard, ICardActions, CatalogItemStatus, ICartItem } from '../types';
 
 export class Card<T> extends Component<ICard<T>> {
 	protected _title: HTMLElement;
-	protected _image: HTMLImageElement;
+	protected _image?: HTMLImageElement;
 	protected _price: HTMLSpanElement;
-	protected _category: HTMLSpanElement;
+	protected _category?: HTMLSpanElement;
 	protected _description?: HTMLParagraphElement;
 	protected _button?: HTMLButtonElement;
 	protected _statusBtn: boolean;
@@ -19,18 +19,31 @@ export class Card<T> extends Component<ICard<T>> {
 		super(container);
 
 		this._title = ensureElement<HTMLElement>(`.${blockName}__title`, container);
-		this._image = ensureElement<HTMLImageElement>(
-			`.${blockName}__image`,
-			container
-		);
+		// this._image = ensureElement<HTMLImageElement>(
+		// 	`.${blockName}__image`,
+		// 	container
+		// );
+		this._image = container.querySelector(`.${blockName}__image`);
+		// if (this._image) {
+		// 	this._image = ensureElement<HTMLImageElement>(
+		// 		`.${blockName}__image`,
+		// 		container
+		// 	);
+		// } else {
+		// 	console.log('lol2');
+		// 	this._image = null;
+		// }
+
 		this._price = ensureElement<HTMLSpanElement>(
 			`.${blockName}__price`,
 			container
 		);
-		this._category = ensureElement<HTMLSpanElement>(
-			`.${blockName}__category`,
-			container
-		);
+		// this._category = ensureElement<HTMLSpanElement>(
+		// 	`.${blockName}__category`,
+		// 	container
+		// );
+		this._category = container.querySelector(`.${blockName}__category`);
+
 		this._description = container.querySelector(
 			`.${blockName}__text`
 		) as HTMLParagraphElement;

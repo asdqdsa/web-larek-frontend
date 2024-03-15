@@ -9,7 +9,7 @@ import { ensureElement, cloneTemplate } from './utils/utils';
 import { CatalogChangeEvent, ICatalogItem, ICartItem } from './types';
 import { Card as CatalogItem, CartItem } from './components/Card';
 import { Modal } from './components/Modal';
-import { ShoppingCart } from './components/shoppingCart';
+import { ShoppingCart, IShoppingCart } from './components/shoppingCart';
 
 const events = new EventEmitter();
 const api = new StoreAPI({ items, images });
@@ -27,7 +27,6 @@ const cartTemplate = ensureElement<HTMLTemplateElement>('#basket');
 const itemCartTemplate = ensureElement<HTMLTemplateElement>('#card-basket');
 
 const shoppingCart = new ShoppingCart(cloneTemplate(cartTemplate), events);
-
 // Изменились элементы каталога
 events.on<CatalogChangeEvent>('items:changed', () => {
 	page.catalog = appData.catalog.map((item) => {
@@ -48,21 +47,36 @@ events.on<CatalogChangeEvent>('items:changed', () => {
 events.on('cart:open', (event) => {
 	console.log(event);
 	// const showItem = ()
+
 	appData.setCartPreview();
+	shoppingCart.price = appData.getTotal();
+	modal.render({
+		content: shoppingCart.render(),
+	});
 });
 
-events.on('cart:preview', (cartState: Set<string>) => {
-	const prevCart = (cartState: Set<string>) => {
+events.on('cart:preview', (cartState) => {
+	console.log(cartState, 'send state');
+	shoppingCart.items = appData.cartItems.map((item) => {
 		const cartItem = new CartItem(cloneTemplate(itemCartTemplate), {
-			onClick: () => events.emit('cart:remove'),
+			onClick: () => events.emit('card:remove', item),
 		});
+		return cartItem.render({
+			title: item.title,
+			price: item.price,
+		});
+	});
+});
 
-		// modal.render({
-		// 	content: cartItem.render({
-		// 		title:
-		// 	})
-		// })
-	};
+events.on('card:remove', (item: ICartItem) => {
+	appData.removeCartItem(item);
+	appData.setCartPreview();
+	events.emit('cart:updatePrice', item);
+	// events.emit('cart:changed', item);
+});
+
+events.on('cart:updatePrice', (item) => {
+	console.log('updating...', item);
 });
 
 // show modal card
