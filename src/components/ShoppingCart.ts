@@ -43,7 +43,7 @@ export class ShoppingCart extends Component<IShoppingCart> {
 		} else {
 			this._list.replaceChildren(
 				createElement<HTMLParagraphElement>('p', {
-					textContent: 'Корзина пуста',
+					textContent: 'Ваша Корзина пуста',
 				})
 			);
 		}

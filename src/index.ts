@@ -9,7 +9,10 @@ import { ensureElement, cloneTemplate } from './utils/utils';
 import { CatalogChangeEvent, ICatalogItem, ICartItem } from './types';
 import { Card as CatalogItem, CartItem } from './components/Card';
 import { Modal } from './components/Modal';
-import { ShoppingCart, IShoppingCart } from './components/shoppingCart';
+import { ShoppingCart, IShoppingCart } from './components/ShoppingCart';
+import { Order } from './components/Order';
+import { Contacts } from './components/Contacts';
+import { Success } from './components/Success';
 
 const events = new EventEmitter();
 const api = new StoreAPI({ items, images });
@@ -25,8 +28,13 @@ const cardCatalogTemplate = ensureElement<HTMLTemplateElement>('#card-catalog');
 const cardPreviewTemplate = ensureElement<HTMLTemplateElement>('#card-preview');
 const cartTemplate = ensureElement<HTMLTemplateElement>('#basket');
 const itemCartTemplate = ensureElement<HTMLTemplateElement>('#card-basket');
+const orderTemplate = ensureElement<HTMLTemplateElement>('#order');
+const contactsTemplate = ensureElement<HTMLTemplateElement>('#contacts');
+const successTemplate = ensureElement<HTMLTemplateElement>('#success');
 
 const shoppingCart = new ShoppingCart(cloneTemplate(cartTemplate), events);
+const order = new Order(cloneTemplate(orderTemplate), events);
+const contacts = new Contacts(cloneTemplate(contactsTemplate), events);
 // Изменились элементы каталога
 events.on<CatalogChangeEvent>('items:changed', () => {
 	page.catalog = appData.catalog.map((item) => {
@@ -40,6 +48,45 @@ events.on<CatalogChangeEvent>('items:changed', () => {
 			price: item.price,
 			category: item.category,
 		});
+	});
+});
+
+events.on('order:open', () => {
+	console.log('pressed order buton');
+	// appData.setOrderPreview();
+	modal.render({
+		content: order.render({
+			address: '',
+			valid: true,
+			errors: [],
+		}),
+	});
+});
+
+events.on('order:submit', () => {
+	console.log('order has bee submitted');
+	modal.render({
+		content: contacts.render({
+			email: '',
+			phone: '',
+			valid: true,
+			errors: [],
+		}),
+	});
+});
+
+events.on('contacts:submit', () => {
+	console.log('contacts has bee submitted');
+	const success = new Success(cloneTemplate(successTemplate), events, {
+		onClick: () => {
+			events.emit('items:changed');
+			modal.close();
+		},
+	});
+	modal.render({
+		content: success.render({
+			totalPrice: appData.getTotal(),
+		}),
 	});
 });
 
