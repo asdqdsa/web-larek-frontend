@@ -7,7 +7,7 @@ export interface ISuccessForm {
 	totalPrice: number;
 }
 
-interface ISuccessActions {
+export interface ISuccessActions {
 	onClick: () => void;
 }
 
@@ -30,7 +30,6 @@ export class Success extends Component<ISuccessForm> {
 			'.order-success__close',
 			this.container
 		);
-
 		if (actions?.onClick) {
 			this._close.addEventListener('click', actions.onClick);
 		}

@@ -1,5 +1,8 @@
 import { ICatalogItem, IAppState, ICartItem } from '../types';
+import { IOrder, IOrderForm } from './Order';
 import { Model } from './base/Model';
+
+export type FormErrors = Partial<Record<keyof IOrder, string>>;
 
 export class CatalogItem extends Model<ICatalogItem> {
 	id: string;
@@ -25,6 +28,13 @@ export class AppState extends Model<IAppState> {
 	cartItems: ICartItem[];
 	total: number;
 	// cartState: Set<string>;
+	order: IOrder = {
+		email: '',
+		phone: '',
+		address: '',
+		items: [],
+	};
+	formErrors: FormErrors = {};
 
 	setCatalog(items: ICatalogItem[]) {
 		this.catalog = items.map((item) => {
@@ -89,5 +99,31 @@ export class AppState extends Model<IAppState> {
 		this.emitChanges('cart:updateCounter', {
 			count: this.cartState.size,
 		});
+	}
+
+	setOrderField(field: keyof IOrderForm, value: string) {
+		this.order[field] = value;
+
+		if (this.validateOrder()) {
+			this.events.emit('order:ready', this.order);
+		}
+	}
+
+	validateOrder() {
+		const errors: typeof this.formErrors = {};
+		if (!this.order.email) {
+			errors.email = 'Необходимо указать email';
+		}
+		if (!this.order.phone) {
+			errors.phone = 'Необходимо указать телефон';
+		}
+		this.formErrors = errors;
+		this.events.emit('formErrors:change', this.formErrors);
+		return Object.keys(errors).length === 0;
+	}
+
+	isAddressValid(input: any) {
+		if (input.value.length > 0) return true;
+		return false;
 	}
 }

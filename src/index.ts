@@ -33,8 +33,6 @@ const contactsTemplate = ensureElement<HTMLTemplateElement>('#contacts');
 const successTemplate = ensureElement<HTMLTemplateElement>('#success');
 
 const shoppingCart = new ShoppingCart(cloneTemplate(cartTemplate), events);
-const order = new Order(cloneTemplate(orderTemplate), events);
-const contacts = new Contacts(cloneTemplate(contactsTemplate), events);
 // Изменились элементы каталога
 events.on<CatalogChangeEvent>('items:changed', () => {
 	page.catalog = appData.catalog.map((item) => {
@@ -51,20 +49,31 @@ events.on<CatalogChangeEvent>('items:changed', () => {
 	});
 });
 
+const order = new Order(cloneTemplate(orderTemplate), events, {
+	onClick: () => {
+		console.log('jk11');
+	},
+});
 events.on('order:open', () => {
 	console.log('pressed order buton');
 	// appData.setOrderPreview();
+	// appData.checkValidation()
 	modal.render({
 		content: order.render({
 			address: '',
-			valid: true,
+			valid: false,
 			errors: [],
 		}),
 	});
 });
 
+const contacts = new Contacts(cloneTemplate(contactsTemplate), events, {
+	onClick: () => {
+		console.log('jk');
+	},
+});
 events.on('order:submit', () => {
-	console.log('order has bee submitted');
+	console.log('order has been submitted');
 	modal.render({
 		content: contacts.render({
 			email: '',
@@ -75,11 +84,22 @@ events.on('order:submit', () => {
 	});
 });
 
+events.on('order.address:change', (input: any) => {
+	const isValid = appData.isAddressValid(input);
+	console.log(isValid);
+	order.setNextEnable(input.field, isValid);
+});
+
+events.on(/^contacts\..*:change/, (input: any) => {
+	console.log('regex');
+});
+
 events.on('contacts:submit', () => {
-	console.log('contacts has bee submitted');
+	console.log('contacts has been submitted');
 	const success = new Success(cloneTemplate(successTemplate), events, {
 		onClick: () => {
 			events.emit('items:changed');
+			// appData.clearShoppingCart();
 			modal.close();
 		},
 	});

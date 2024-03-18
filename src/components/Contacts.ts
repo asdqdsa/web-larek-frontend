@@ -6,11 +6,30 @@ import { Form } from './Form';
 export interface IContactsForm {
 	email: string;
 	phone: string;
+	actions?: IContactsActions;
+}
+
+export interface IContactsActions {
+	onClick: () => void;
 }
 
 export class Contacts extends Form<IContactsForm> {
-	constructor(container: HTMLFormElement, events: IEvents) {
+	protected _close: HTMLElement;
+
+	constructor(
+		container: HTMLFormElement,
+		events: IEvents,
+		actions?: IContactsActions
+	) {
 		super(container, events);
+
+		// this._close = ensureElement<HTMLElement>(
+		// 	'.order-success__close',
+		// 	this.container
+		// );
+		if (actions?.onClick) {
+			this._submit.addEventListener('click', actions.onClick);
+		}
 	}
 
 	set phone(value: string) {
@@ -22,6 +41,7 @@ export class Contacts extends Form<IContactsForm> {
 		(this.container.elements.namedItem('email') as HTMLInputElement).value =
 			value;
 	}
+
 	// set address(value: string) {
 	// 	(
 	// 		this.container.elements.namedItem('address') as HTMLInputElement
