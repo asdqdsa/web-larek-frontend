@@ -1,7 +1,21 @@
 import { Component } from './base/Component';
 import { IEvents } from './base/events';
 import { ensureElement } from '../utils/utils';
-import { IPage } from '../types';
+// import { IPage } from '../types';
+
+export interface IPage {
+	catalog: HTMLElement[];
+	locked: boolean;
+	cartCounter: TUpdateCounter;
+}
+
+export type TUpdateCounter = {
+	count: number;
+};
+
+export interface IPageActions {
+	onClick: (event: MouseEvent) => void;
+}
 
 export class Page extends Component<IPage> {
 	protected _catalog: HTMLElement;
@@ -9,23 +23,22 @@ export class Page extends Component<IPage> {
 	protected _cart: HTMLElement;
 	protected _cartCounter: HTMLElement;
 
-	constructor(container: HTMLElement, protected events: IEvents) {
+	constructor(container: HTMLElement, actions: IPageActions) {
 		super(container);
 		this._catalog = ensureElement<HTMLElement>('.gallery');
 		this._wrapper = ensureElement<HTMLElement>('.page__wrapper');
 		this._cart = ensureElement<HTMLElement>('.header__basket');
-		this._cart.addEventListener('click', (event) =>
-			this.events.emit('cart:open', event.target)
-		);
 		this._cartCounter = ensureElement<HTMLElement>('.header__basket-counter');
+
+		if (actions?.onClick) this._cart.addEventListener('click', actions.onClick);
 	}
 
 	set catalog(items: HTMLElement[]) {
 		this._catalog.replaceChildren(...items);
 	}
 
-	set cartCounter(value: object) {
-		this.setText(this._cartCounter, value);
+	set cartCounter(data: TUpdateCounter) {
+		this.setText(this._cartCounter, data.count);
 	}
 
 	set locked(value: boolean) {

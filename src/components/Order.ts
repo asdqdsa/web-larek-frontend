@@ -21,7 +21,7 @@ export class Order extends Form<IOrderForm> {
 	constructor(
 		container: HTMLFormElement,
 		events: IEvents,
-		actions?: IOrderActions
+		actions: IOrderActions
 	) {
 		super(container, events);
 

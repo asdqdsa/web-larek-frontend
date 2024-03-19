@@ -48,7 +48,7 @@ export type CatalogItemStatus = {
 	label: string;
 };
 
-export interface ICard<T> {
+export interface ICard {
 	// description: string;
 	image?: string;
 	title: string;
@@ -61,7 +61,57 @@ export interface ICard<T> {
 
 // types for Page
 export interface IPage {
-	counter: number;
+	// counter: number;
 	catalog: HTMLElement[];
 	locked: boolean;
 }
+
+// events enum
+export enum Events {
+	ITEMS_CHANGE = 'items:changed',
+	PREVIEW_CHANGE = 'preview:changed',
+	PREVIEW_PROCESS = 'preview:process',
+
+	CARD_SELECT = 'card:select',
+	CARD_REMOVE = 'card:remove',
+
+	ORDER_OPEN = 'order:open',
+	ORDER_ADDRESS = 'order:submit',
+	ORDER_CONTACTS = 'contacts:submit',
+
+	SHOPCART_OPEN = 'cart:open',
+	SHOPCART_PREVIEW = 'cart:preview',
+	SHOPTCART_CHANGE = 'cart:changed',
+	SHOPCART_PRICE_UPD = 'cart:updatePrice',
+	SHOPCART_COUNT_UPD = 'cart:updateCounter',
+	ORDER_CHANGE_ADDRESS = 'order.address:change',
+
+	MODAL_OPEN = 'modal:open',
+	MODAL_CLOSE = 'modal:close',
+
+	REGEX_CHANGE = `/^contacts..*:change/`, // ??
+}
+
+export enum CategoryCard {
+	SOFT = 'софт-скил',
+	OTHER = 'другое',
+	MISC = 'дополнительное',
+	BUTTON = 'кнопка',
+	HARD = 'хард-скил',
+}
+
+export const CategoryCardDict: Map<CategoryCard, string> = new Map([
+	[CategoryCard.SOFT, 'card__category_soft'],
+	[CategoryCard.HARD, 'card__category_hard'],
+	[CategoryCard.BUTTON, 'card__category_button'],
+	[CategoryCard.OTHER, 'card__category_other'],
+	[CategoryCard.MISC, 'card__category_additional'],
+]);
+
+export const dictCategoryCard: Map<string, string> = new Map([
+	['софт-скил', 'card__category_soft'],
+	['другое', 'card__category_hard'],
+	['дополнительное', 'card__category_button'],
+	['кнопка', 'card__category_other'],
+	['хард-скил', 'card__category_additional'],
+]);

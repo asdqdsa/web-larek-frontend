@@ -1,8 +1,16 @@
 import { Component } from './base/Component';
 import { ensureElement } from '../utils/utils';
-import { ICard, ICardActions, CatalogItemStatus, ICartItem } from '../types';
+import {
+	ICard,
+	ICardActions,
+	CatalogItemStatus,
+	ICartItem,
+	CategoryCard,
+	CategoryCardDict,
+	dictCategoryCard,
+} from '../types';
 
-export class Card<T> extends Component<ICard<T>> {
+export class Card extends Component<ICard> {
 	protected _title: HTMLElement;
 	protected _image?: HTMLImageElement;
 	protected _price: HTMLSpanElement;
@@ -19,50 +27,23 @@ export class Card<T> extends Component<ICard<T>> {
 		super(container);
 
 		this._title = ensureElement<HTMLElement>(`.${blockName}__title`, container);
-		// this._image = ensureElement<HTMLImageElement>(
-		// 	`.${blockName}__image`,
-		// 	container
-		// );
 		this._image = container.querySelector(`.${blockName}__image`);
-		// if (this._image) {
-		// 	this._image = ensureElement<HTMLImageElement>(
-		// 		`.${blockName}__image`,
-		// 		container
-		// 	);
-		// } else {
-		// 	console.log('lol2');
-		// 	this._image = null;
-		// }
-
 		this._price = ensureElement<HTMLSpanElement>(
 			`.${blockName}__price`,
 			container
 		);
-		// this._category = ensureElement<HTMLSpanElement>(
-		// 	`.${blockName}__category`,
-		// 	container
-		// );
 		this._category = container.querySelector(`.${blockName}__category`);
-
 		this._description = container.querySelector(
 			`.${blockName}__text`
 		) as HTMLParagraphElement;
 		this._button = container.querySelector(`.${blockName}__button`);
-		// this._statusBtn =
 		if (actions?.onClick) {
 			if (this._button) {
 				this._button.addEventListener('click', actions.onClick);
 			} else {
 				container.addEventListener('click', actions.onClick);
 			}
-			// this.container.addEventListener('click', actions.onClick);
-			// console.log(this.statusBtn);
-			if (this.statusBtn) {
-				this.setDisabled(this._button, this._statusBtn);
-				// console.log('disable');
-			} else {
-				// console.log('enable');
-			}
+			if (this.statusBtn) this.setDisabled(this._button, this._statusBtn);
 		}
 	}
 
@@ -103,7 +84,7 @@ export class Card<T> extends Component<ICard<T>> {
 
 	set price(value: string) {
 		if (value === null) this.setPrice(this._price, 'Priceless');
-		else this.setPrice(this._price, value);
+		else this.setPrice(this._price, value + ' синапсов');
 	}
 
 	get category(): string {
@@ -122,25 +103,13 @@ export class Card<T> extends Component<ICard<T>> {
 		this.setDescription(this._description, value);
 	}
 
-	// get status(): any {
-	// 	return this._status
-	// }
-}
-
-export class CatalogItem1 extends Card<CatalogItemStatus> {
-	protected _status: HTMLElement;
-	// protected _statusBtn: boolean;
-
-	constructor(container: HTMLElement, actions?: ICardActions) {
-		super(container, actions, 'card');
-	}
-
-	set status({ status, label }: CatalogItemStatus) {
-		this.setText(this._status, label);
+	setCategoryCard(value: string) {
+		// console.log(this._category, dictCategoryCard.get(value));
+		this.addStyleClass(this._category, dictCategoryCard.get(value));
 	}
 }
 
-export class CartItem extends Card<ICartItem> {
+export class CartItem extends Card {
 	constructor(container: HTMLElement, actions?: ICardActions) {
 		super(container, actions, 'card');
 	}

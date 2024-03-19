@@ -47,6 +47,11 @@ export class Modal extends Component<IModalData> {
 		this.events.emit('modal:close');
 	}
 
+	//?   check
+	toggleCartBtn(state: boolean) {
+		this.setDisabled(this._nextButton, state);
+	}
+
 	render(data: IModalData): HTMLElement {
 		super.render(data);
 		this.open();

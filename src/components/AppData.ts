@@ -45,11 +45,14 @@ export class AppState extends Model<IAppState> {
 	}
 
 	setPreview(item: ICatalogItem) {
-		this.preview = item.id;
+		// this.preview = item.id;
 		// this.cartState.push(item.id);
 		// console.log(item.status, 'itemstatusappdata');
-		if (!item.status) this.emitChanges('preview:changed', item);
-		else this.emitChanges('preview:process', item);
+
+		// if (!item.status) this.emitChanges('preview:changed', item);
+		// else this.emitChanges('preview:process', item);
+
+		this.emitChanges('preview:changed', item);
 	}
 
 	addItemCart(item: ICatalogItem) {
