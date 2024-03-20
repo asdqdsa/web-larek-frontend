@@ -3,25 +3,25 @@ import { Form } from './Form';
 import { EventEmitter, IEvents } from './base/events';
 import { ensureElement } from '../utils/utils';
 
-export interface IOrderForm {
+export type TOrderForm = {
 	email: string;
 	phone: string;
 	address: string;
-}
+};
 
-export interface IOrderActions {
+export type TOrderActions = {
 	onClick: () => void;
-}
+};
 
-export interface IOrder extends IOrderForm {
+export type TOrder = {
 	items: string[];
-}
+} & TOrderForm;
 
-export class Order extends Form<IOrderForm> {
+export class Order extends Form<TOrderForm> {
 	constructor(
 		container: HTMLFormElement,
 		events: IEvents,
-		actions: IOrderActions
+		actions: TOrderActions
 	) {
 		super(container, events);
 

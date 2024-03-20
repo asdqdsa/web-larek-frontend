@@ -7,7 +7,7 @@ import { AppState } from './components/AppData';
 import { Page, TUpdateCounter } from './components/Page';
 import { ensureElement, cloneTemplate } from './utils/utils';
 import { CatalogChangeEvent, ICatalogItem, ICartItem, Events } from './types';
-import { Card as CatalogItem, CartItem } from './components/Card';
+import { Card as CatalogItem, Card as CartItem } from './components/Card';
 import { Modal } from './components/Modal';
 import { ShoppingCart, IShoppingCart } from './components/ShoppingCart';
 import { Order } from './components/Order';
@@ -35,7 +35,9 @@ const orderTemplate = ensureElement<HTMLTemplateElement>('#order');
 const contactsTemplate = ensureElement<HTMLTemplateElement>('#contacts');
 const successTemplate = ensureElement<HTMLTemplateElement>('#success');
 
-const shoppingCart = new ShoppingCart(cloneTemplate(cartTemplate), events);
+const shoppingCart = new ShoppingCart(cloneTemplate(cartTemplate), {
+	onClick: () => events.emit('order:open'),
+});
 
 events.on('items:changed', () => {
 	page.catalog = appData.catalog.map((item) => {
@@ -99,7 +101,7 @@ events.on(/^contacts\..*:change/, (input: any) => {
 
 events.on('contacts:submit', () => {
 	console.log('contacts has been submitted');
-	const success = new Success(cloneTemplate(successTemplate), events, {
+	const success = new Success(cloneTemplate(successTemplate), {
 		onClick: () => {
 			events.emit('items:changed');
 			// appData.clearShoppingCart();
@@ -121,8 +123,8 @@ events.on('cart:open', () => {
 	// shoppingCart.setOrderIndex();
 });
 
-events.on('cart:preview', (cartState) => {
-	console.log(cartState, 'send state');
+events.on('cart:preview', (cartState: TUpdateCounter) => {
+	console.log(cartState.count, 'send state');
 	shoppingCart.items = appData.cartItems.map((item) => {
 		const cartItem = new CartItem(cloneTemplate(itemCartTemplate), {
 			onClick: () => events.emit('card:remove', item),
@@ -132,6 +134,7 @@ events.on('cart:preview', (cartState) => {
 			price: item.price,
 		});
 	});
+	shoppingCart.setOrderButton(cartState.count);
 	shoppingCart.setOrderIndex();
 });
 

@@ -3,27 +3,33 @@ import { IEvents } from './base/events';
 import { ensureElement } from '../utils/utils';
 // import { IPage } from '../types';
 
-export interface IPage {
+export type TPage = {
 	catalog: HTMLElement[];
 	locked: boolean;
 	cartCounter: TUpdateCounter;
-}
+};
 
 export type TUpdateCounter = {
 	count: number;
 };
 
-export interface IPageActions {
+export type TPageActions = {
 	onClick: (event: MouseEvent) => void;
+};
+
+export interface IPageView {
+	catalog: HTMLElement[];
+	cartCounter: TUpdateCounter;
+	locked: boolean;
 }
 
-export class Page extends Component<IPage> {
+export class Page extends Component<TPage> implements IPageView {
 	protected _catalog: HTMLElement;
 	protected _wrapper: HTMLElement;
 	protected _cart: HTMLElement;
 	protected _cartCounter: HTMLElement;
 
-	constructor(container: HTMLElement, actions: IPageActions) {
+	constructor(container: HTMLElement, actions: TPageActions) {
 		super(container);
 		this._catalog = ensureElement<HTMLElement>('.gallery');
 		this._wrapper = ensureElement<HTMLElement>('.page__wrapper');
@@ -42,10 +48,7 @@ export class Page extends Component<IPage> {
 	}
 
 	set locked(value: boolean) {
-		if (value) {
-			this._wrapper.classList.add('page__wrapper_locked');
-		} else {
-			this._wrapper.classList.remove('page__wrapper_locked');
-		}
+		if (value) this._wrapper.classList.add('page__wrapper_locked');
+		else this._wrapper.classList.remove('page__wrapper_locked');
 	}
 }

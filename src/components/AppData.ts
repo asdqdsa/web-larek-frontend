@@ -1,8 +1,8 @@
 import { ICatalogItem, IAppState, ICartItem } from '../types';
-import { IOrder, IOrderForm } from './Order';
+import { TOrder, TOrderForm } from './Order';
 import { Model } from './base/Model';
 
-export type FormErrors = Partial<Record<keyof IOrder, string>>;
+export type FormErrors = Partial<Record<keyof TOrder, string>>;
 
 export class CatalogItem extends Model<ICatalogItem> {
 	id: string;
@@ -28,7 +28,7 @@ export class AppState extends Model<IAppState> {
 	cartItems: ICartItem[];
 	total: number;
 	// cartState: Set<string>;
-	order: IOrder = {
+	order: TOrder = {
 		email: '',
 		phone: '',
 		address: '',
@@ -76,13 +76,15 @@ export class AppState extends Model<IAppState> {
 		);
 		this.getTotal();
 		console.log(this.cartItems);
-		this.emitChanges('cart:preview', { cartState: this.cartItems });
+		this.emitChanges('cart:preview', { count: this.cartState.size });
+		// {
+		// 	// cartState: this.cartItems,
+		// 	count: ,
+		// }
 	}
 
 	setCartList(items: ICartItem[]) {
-		this.cartList = items.map((item) => {
-			return new CartList(item, this.events);
-		});
+		this.cartList = items.map((item) => new CartList(item, this.events));
 	}
 
 	getTotal(): number {
@@ -104,7 +106,7 @@ export class AppState extends Model<IAppState> {
 		});
 	}
 
-	setOrderField(field: keyof IOrderForm, value: string) {
+	setOrderField(field: keyof TOrderForm, value: string) {
 		this.order[field] = value;
 
 		if (this.validateOrder()) {
@@ -126,7 +128,6 @@ export class AppState extends Model<IAppState> {
 	}
 
 	isAddressValid(input: any) {
-		if (input.value.length > 0) return true;
-		return false;
+		return input.value.length > 0 ? true : false;
 	}
 }

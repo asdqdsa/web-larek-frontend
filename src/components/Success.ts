@@ -3,22 +3,23 @@ import { ensureElement } from '../utils/utils';
 import { Form } from './Form';
 import { Component } from './base/Component';
 
-export interface ISuccessForm {
+export type TSuccessForm = {
+	totalPrice: number;
+};
+
+export type TSuccessActions = {
+	onClick: () => void;
+};
+
+export interface ISuccessView {
 	totalPrice: number;
 }
 
-export interface ISuccessActions {
-	onClick: () => void;
-}
-
-export class Success extends Component<ISuccessForm> {
+export class Success extends Component<TSuccessForm> implements ISuccessView {
 	protected _close: HTMLElement;
 	protected _totalPrice: HTMLParagraphElement;
-	constructor(
-		container: HTMLFormElement,
-		events: IEvents,
-		actions?: ISuccessActions
-	) {
+
+	constructor(container: HTMLFormElement, actions: TSuccessActions) {
 		super(container);
 
 		this._totalPrice = ensureElement<HTMLParagraphElement>(
@@ -30,25 +31,13 @@ export class Success extends Component<ISuccessForm> {
 			'.order-success__close',
 			this.container
 		);
+
 		if (actions?.onClick) {
 			this._close.addEventListener('click', actions.onClick);
 		}
 	}
+
 	set totalPrice(value: number) {
 		this.setText(this._totalPrice, value);
 	}
-	// set phone(value: string) {
-	// 	(this.container.elements.namedItem('phone') as HTMLInputElement).value =
-	// 		value;
-	// }
-
-	// set email(value: string) {
-	// 	(this.container.elements.namedItem('email') as HTMLInputElement).value =
-	// 		value;
-	// }
-	// set address(value: string) {
-	// 	(
-	// 		this.container.elements.namedItem('address') as HTMLInputElement
-	// 	).setAttribute('value', value);
-	// }
 }

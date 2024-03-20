@@ -2,11 +2,19 @@ import { Component } from './base/Component';
 import { ensureElement } from '../utils/utils';
 import { IEvents } from './base/events';
 
-interface IModalData {
+export type IModalData = {
 	content: HTMLElement;
+};
+
+export interface IModalView {
+	content: HTMLElement;
+	open(): void;
+	close(): void;
+	toggleCartBtn(state: boolean): void;
+	render(data: IModalData): HTMLElement;
 }
 
-export class Modal extends Component<IModalData> {
+export class Modal extends Component<IModalData> implements IModalView {
 	protected _closeButton: HTMLButtonElement;
 	protected _content: HTMLElement;
 	protected _nextButton: HTMLButtonElement;
@@ -20,15 +28,9 @@ export class Modal extends Component<IModalData> {
 		);
 		this._content = ensureElement<HTMLElement>('.modal__content', container);
 		this._nextButton = container.querySelector('.card__button');
-		// console.log(this._nextButton, 'modal next button');
 		this._closeButton.addEventListener('click', this.close.bind(this));
 		this.container.addEventListener('click', this.close.bind(this));
 		this._content.addEventListener('click', (event) => event.stopPropagation());
-		// if (this._nextButton) {
-		// 	this._nextButton.addEventListener('click', (event) =>
-		// 		console.log('fdsd')
-		// 	);
-		// }
 	}
 
 	set content(value: HTMLElement) {
@@ -36,18 +38,16 @@ export class Modal extends Component<IModalData> {
 	}
 
 	open() {
-		// console.log('open');
-		this.container.classList.add('modal_active');
+		this.addStyleClass(this.container, 'modal_active');
 		this.events.emit('modal:open');
 	}
 
 	close() {
-		this.container.classList.remove('modal_active');
+		this.removeStyleClass(this.container, 'modal_active');
 		this.content = null;
 		this.events.emit('modal:close');
 	}
 
-	//?   check
 	toggleCartBtn(state: boolean) {
 		this.setDisabled(this._nextButton, state);
 	}

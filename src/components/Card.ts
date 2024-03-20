@@ -1,8 +1,8 @@
 import { Component } from './base/Component';
 import { ensureElement } from '../utils/utils';
 import {
-	ICard,
-	ICardActions,
+	// ICard,
+	// ICardActions,
 	CatalogItemStatus,
 	ICartItem,
 	CategoryCard,
@@ -10,7 +10,32 @@ import {
 	dictCategoryCard,
 } from '../types';
 
-export class Card extends Component<ICard> {
+export interface ICardActions {
+	onClick: (event: MouseEvent) => void;
+}
+
+export type TCard = {
+	title: string;
+	image?: string;
+	price: number | null;
+	category?: string;
+	description?: string;
+	button: HTMLButtonElement;
+	statusBtn: boolean;
+};
+
+export interface ICardView {
+	title: string;
+	image?: string;
+	price: string;
+	category?: string;
+	description?: string;
+	button: HTMLButtonElement;
+	statusBtn: boolean;
+	setCategoryCard(value: string): void;
+}
+
+export class Card extends Component<TCard> implements ICardView {
 	protected _title: HTMLElement;
 	protected _image?: HTMLImageElement;
 	protected _price: HTMLSpanElement;
@@ -21,7 +46,7 @@ export class Card extends Component<ICard> {
 
 	constructor(
 		container: HTMLElement,
-		actions?: ICardActions,
+		actions: ICardActions,
 		protected blockName: string = 'card'
 	) {
 		super(container);
@@ -56,14 +81,6 @@ export class Card extends Component<ICard> {
 	}
 	set statusBtn(value: boolean) {
 		this._statusBtn = value;
-	}
-
-	set id(value: string) {
-		this.container.dataset.id = value;
-	}
-
-	get id(): string {
-		return this.container.dataset.id || '';
 	}
 
 	set title(value: string) {
@@ -109,8 +126,8 @@ export class Card extends Component<ICard> {
 	}
 }
 
-export class CartItem extends Card {
-	constructor(container: HTMLElement, actions?: ICardActions) {
-		super(container, actions, 'card');
-	}
-}
+// export class CartItem extends Card {
+// 	constructor(container: HTMLElement, actions?: ICardActions) {
+// 		super(container, actions, 'card');
+// 	}
+// }
