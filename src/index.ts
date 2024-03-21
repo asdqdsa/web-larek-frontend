@@ -10,7 +10,7 @@ import { CatalogChangeEvent, ICatalogItem, ICartItem, Events } from './types';
 import { Card as CatalogItem, Card as CartItem } from './components/Card';
 import { Modal } from './components/Modal';
 import { ShoppingCart, IShoppingCart } from './components/ShoppingCart';
-import { Order } from './components/Order';
+import { Order, TPayment } from './components/Order';
 import { Contacts } from './components/Contacts';
 import { Success } from './components/Success';
 
@@ -41,9 +41,7 @@ const shoppingCart = new ShoppingCart(cloneTemplate(cartTemplate), {
 
 events.on('items:changed', () => {
 	page.catalog = appData.catalog.map((item) => {
-		// console.log(item.description);
 		const card = new CatalogItem(cloneTemplate(cardCatalogTemplate), {
-			// onClick: () => events.emit('card:select', item),
 			onClick: () => events.emit('preview:changed', item),
 		});
 		card.setCategoryCard(item.category);
@@ -57,24 +55,56 @@ events.on('items:changed', () => {
 });
 
 const order = new Order(cloneTemplate(orderTemplate), events, {
-	onClick: () => console.log('jk11'),
+	onClickPayment: (event: Event) => {
+		const paymentType = (event.target as HTMLElement).getAttribute('name');
+		appData.setPaymentType(paymentType);
+		order.setStyleBorder(paymentType);
+		order.setNextEnable(null, appData.isOrderValid());
+	},
 });
 events.on('order:open', () => {
 	console.log('pressed order buton');
-	// appData.setOrderPreview();
-	// appData.checkValidation()
 	modal.render({
 		content: order.render({
 			address: '',
-			valid: false,
+			valid: appData.isOrderValid(),
 			errors: [],
 		}),
 	});
 });
 
+events.on('order.address:change', () => {
+	appData.setAddress(order.address);
+	order.setNextEnable(null, appData.isOrderValid());
+});
+
+// (errors: Record<string, string>)
+events.on('orderErrors:change', (errors: Record<string, string>) => {
+	console.log(errors);
+	if (errors) order.errors = `${errors.payment || ''} ${errors.address || ''}`;
+	else order.errors = '';
+});
+
+events.on('contactsErrors:change', (errors: Record<string, string>) => {
+	console.log(errors);
+	if (errors) contacts.errors = `${errors.email || ''} ${errors.phone || ''}`;
+	else order.errors = '';
+});
+
 const contacts = new Contacts(cloneTemplate(contactsTemplate), events, {
 	onClick: () => {
-		console.log('jk');
+		console.log(
+			'contacts',
+			appData.contactsState,
+			appData.paymentState,
+			appData.cartState
+		);
+		appData.createOrder();
+		console.log(appData.order);
+		api
+			.orderItems(appData.order)
+			.then((result) => console.log(result))
+			.catch((error) => console.error(error));
 	},
 });
 events.on('order:submit', () => {
@@ -83,28 +113,26 @@ events.on('order:submit', () => {
 		content: contacts.render({
 			email: '',
 			phone: '',
-			valid: true,
+			valid: appData.isContactsValid(),
 			errors: [],
 		}),
 	});
 });
 
-events.on('order.address:change', (input: any) => {
-	const isValid = appData.isAddressValid(input);
-	console.log(isValid);
-	order.setNextEnable(input.field, isValid);
-});
-
-events.on(/^contacts\..*:change/, (input: any) => {
-	console.log('regex');
+events.on(/^contacts\..*:change/, () => {
+	console.log('regex', appData.contactsState);
+	appData.setPhone(contacts.phone);
+	appData.setEmail(contacts.email);
+	contacts.setNextEnable(null, appData.isContactsValid());
+	appData.isContactsValid();
 });
 
 events.on('contacts:submit', () => {
 	console.log('contacts has been submitted');
+
 	const success = new Success(cloneTemplate(successTemplate), {
 		onClick: () => {
 			events.emit('items:changed');
-			// appData.clearShoppingCart();
 			modal.close();
 		},
 	});
@@ -120,7 +148,6 @@ events.on('cart:open', () => {
 	appData.setCartPreview();
 	shoppingCart.price = appData.getTotal();
 	modal.render({ content: shoppingCart.render() });
-	// shoppingCart.setOrderIndex();
 });
 
 events.on('cart:preview', (cartState: TUpdateCounter) => {
@@ -144,21 +171,11 @@ events.on('card:remove', (item: ICartItem) => {
 	events.emit('cart:updatePrice', item);
 });
 
-// events.on('cart:updatePrice', (item) => {
-// 	console.log('updating...', item);
-// });
-
-// show modal card ?????????
-// events.on('card:select', (item: ICatalogItem) => {
-// 	appData.setPreview(item);
-// });
-
 events.on('preview:changed', (item: ICatalogItem) => {
 	const showItem = (item: ICatalogItem) => {
 		const card = new CatalogItem(cloneTemplate(cardPreviewTemplate), {
 			onClick: () => events.emit('cart:changed', item),
 		});
-		// modal.toggleCartBtn(item.status);
 		card.button.disabled = item.status;
 		card.setCategoryCard(item.category);
 		modal.render({
@@ -186,7 +203,6 @@ events.on('modal:close', () => (page.locked = false));
 events.on('cart:changed', (item: ICatalogItem) => {
 	if (!item.status) {
 		appData.addItemCart(item);
-		// appData.setPreview(item);
 		modal.toggleCartBtn(item.status);
 	} else {
 		console.log('something went wrong');
