@@ -1,20 +1,9 @@
 import { Component } from './base/Component';
 import { ensureElement } from '../utils/utils';
 import { IEvents } from './base/events';
+import { IModalView, TModalData } from '../types';
 
-export type IModalData = {
-	content: HTMLElement;
-};
-
-export interface IModalView {
-	content: HTMLElement;
-	open(): void;
-	close(): void;
-	toggleCartBtn(state: boolean): void;
-	render(data: IModalData): HTMLElement;
-}
-
-export class Modal extends Component<IModalData> implements IModalView {
+export class Modal extends Component<TModalData> implements IModalView {
 	protected _closeButton: HTMLButtonElement;
 	protected _content: HTMLElement;
 	protected _nextButton: HTMLButtonElement;
@@ -52,7 +41,7 @@ export class Modal extends Component<IModalData> implements IModalView {
 		this.setDisabled(this._nextButton, state);
 	}
 
-	render(data: IModalData): HTMLElement {
+	render(data: TModalData): HTMLElement {
 		super.render(data);
 		this.open();
 		return this.container;

@@ -1,25 +1,21 @@
 import './scss/styles.scss';
-
 import { EventEmitter } from './components/base/events';
 import { API_URL as items, CDN_URL as images } from './utils/constants';
 import { StoreAPI } from './components/StoreAPI';
 import { AppState } from './components/AppData';
-import { Page, TUpdateCounter } from './components/Page';
+import { Page } from './components/Page';
 import { ensureElement, cloneTemplate } from './utils/utils';
-import { CatalogChangeEvent, ICatalogItem, ICartItem, Events } from './types';
+import { ICatalogItem, ICartItem, TUpdateCounter } from './types';
 import { Card as CatalogItem, Card as CartItem } from './components/Card';
 import { Modal } from './components/Modal';
-import { ShoppingCart, IShoppingCart } from './components/ShoppingCart';
-import { Order, TPayment } from './components/Order';
+import { ShoppingCart } from './components/ShoppingCart';
+import { Order } from './components/Order';
 import { Contacts } from './components/Contacts';
 import { Success } from './components/Success';
 
 const events = new EventEmitter();
 const api = new StoreAPI({ items, images });
-const appData = new AppState({}, events);
-
-// debag
-events.onAll(({ eventName, data }) => console.log(eventName, data));
+const appData = new AppState(events);
 
 const page = new Page(document.body, {
 	onClick: (event) => events.emit('cart:open', event),
@@ -39,6 +35,7 @@ const shoppingCart = new ShoppingCart(cloneTemplate(cartTemplate), {
 	onClick: () => events.emit('order:open'),
 });
 
+// show items on main page
 events.on('items:changed', () => {
 	page.catalog = appData.catalog.map((item) => {
 		const card = new CatalogItem(cloneTemplate(cardCatalogTemplate), {
@@ -54,123 +51,7 @@ events.on('items:changed', () => {
 	});
 });
 
-const order = new Order(cloneTemplate(orderTemplate), events, {
-	onClickPayment: (event: Event) => {
-		const paymentType = (event.target as HTMLElement).getAttribute('name');
-		appData.setPaymentType(paymentType);
-		order.setStyleBorder(paymentType);
-		order.setNextEnable(null, appData.isOrderValid());
-	},
-});
-events.on('order:open', () => {
-	console.log('pressed order buton');
-	modal.render({
-		content: order.render({
-			address: '',
-			valid: appData.isOrderValid(),
-			errors: [],
-		}),
-	});
-});
-
-events.on('order.address:change', () => {
-	appData.setAddress(order.address);
-	order.setNextEnable(null, appData.isOrderValid());
-});
-
-// (errors: Record<string, string>)
-events.on('orderErrors:change', (errors: Record<string, string>) => {
-	console.log(errors);
-	if (errors) order.errors = `${errors.payment || ''} ${errors.address || ''}`;
-	else order.errors = '';
-});
-
-events.on('contactsErrors:change', (errors: Record<string, string>) => {
-	console.log(errors);
-	if (errors) contacts.errors = `${errors.email || ''} ${errors.phone || ''}`;
-	else order.errors = '';
-});
-
-const contacts = new Contacts(cloneTemplate(contactsTemplate), events, {
-	onClick: () => {
-		console.log(
-			'contacts',
-			appData.contactsState,
-			appData.paymentState,
-			appData.cartState
-		);
-		appData.createOrder();
-		console.log(appData.order);
-		api
-			.orderItems(appData.order)
-			.then((result) => console.log(result))
-			.catch((error) => console.error(error));
-	},
-});
-events.on('order:submit', () => {
-	console.log('order has been submitted');
-	modal.render({
-		content: contacts.render({
-			email: '',
-			phone: '',
-			valid: appData.isContactsValid(),
-			errors: [],
-		}),
-	});
-});
-
-events.on(/^contacts\..*:change/, () => {
-	console.log('regex', appData.contactsState);
-	appData.setPhone(contacts.phone);
-	appData.setEmail(contacts.email);
-	contacts.setNextEnable(null, appData.isContactsValid());
-	appData.isContactsValid();
-});
-
-events.on('contacts:submit', () => {
-	console.log('contacts has been submitted');
-
-	const success = new Success(cloneTemplate(successTemplate), {
-		onClick: () => {
-			events.emit('items:changed');
-			modal.close();
-		},
-	});
-	modal.render({
-		content: success.render({
-			totalPrice: appData.getTotal(),
-		}),
-	});
-});
-
-// show cart
-events.on('cart:open', () => {
-	appData.setCartPreview();
-	shoppingCart.price = appData.getTotal();
-	modal.render({ content: shoppingCart.render() });
-});
-
-events.on('cart:preview', (cartState: TUpdateCounter) => {
-	console.log(cartState.count, 'send state');
-	shoppingCart.items = appData.cartItems.map((item) => {
-		const cartItem = new CartItem(cloneTemplate(itemCartTemplate), {
-			onClick: () => events.emit('card:remove', item),
-		});
-		return cartItem.render({
-			title: item.title,
-			price: item.price,
-		});
-	});
-	shoppingCart.setOrderButton(cartState.count);
-	shoppingCart.setOrderIndex();
-});
-
-events.on('card:remove', (item: ICartItem) => {
-	appData.removeCartItem(item);
-	appData.setCartPreview();
-	events.emit('cart:updatePrice', item);
-});
-
+// show item when selected
 events.on('preview:changed', (item: ICatalogItem) => {
 	const showItem = (item: ICatalogItem) => {
 		const card = new CatalogItem(cloneTemplate(cardPreviewTemplate), {
@@ -197,22 +78,135 @@ events.on('preview:changed', (item: ICatalogItem) => {
 	} else modal.close();
 });
 
-events.on('modal:open', () => (page.locked = true));
-events.on('modal:close', () => (page.locked = false));
+// show cart
+events.on('cart:open', () => {
+	appData.setCartPreview();
+	shoppingCart.price = appData.getTotal();
+	modal.render({ content: shoppingCart.render() });
+});
 
+// show cart item in shopping cart
+events.on('cart:preview', (cartState: TUpdateCounter) => {
+	// console.log(cartState.count, 'send state');
+	shoppingCart.items = appData.cartItems.map((item) => {
+		const cartItem = new CartItem(cloneTemplate(itemCartTemplate), {
+			onClick: () => events.emit('card:remove', item),
+		});
+		return cartItem.render({
+			title: item.title,
+			price: item.price,
+		});
+	});
+	shoppingCart.setOrderButton(cartState.count);
+	shoppingCart.setOrderIndex();
+});
+
+// add item to cart
 events.on('cart:changed', (item: ICatalogItem) => {
 	if (!item.status) {
 		appData.addItemCart(item);
 		modal.toggleCartBtn(item.status);
-	} else {
-		console.log('something went wrong');
 	}
 });
 
+// remove item from cart
+events.on('card:remove', (item: ICartItem) => {
+	appData.removeCartItem(item);
+	appData.setCartPreview();
+	// events.emit('cart:updatePrice', item);
+});
+
+// picking payment type when making order
+const order = new Order(cloneTemplate(orderTemplate), events, {
+	onClickPayment: (event: Event) => {
+		const paymentType = (event.target as HTMLElement).getAttribute('name');
+		appData.setPaymentType(paymentType);
+		order.setStyleBorder(paymentType);
+		order.setNextToggle(appData.isOrderValid());
+	},
+});
+
+// open order
+events.on('order:open', () => {
+	modal.render({
+		content: order.render({
+			address: '',
+			valid: appData.isOrderValid(),
+			errors: [],
+		}),
+	});
+});
+
+// when order input changes
+events.on('order.address:change', () => {
+	appData.setAddress(order.address);
+	order.setNextToggle(appData.isOrderValid());
+});
+
+// when errors validation occures
+events.on('orderErrors:change', (errors: Record<string, string>) => {
+	if (errors) order.errors = `${errors.payment || ''} ${errors.address || ''}`;
+	else order.errors = '';
+});
+
+events.on('contactsErrors:change', (errors: Record<string, string>) => {
+	if (errors) contacts.errors = `${errors.email || ''} ${errors.phone || ''}`;
+	else order.errors = '';
+});
+
+// clickin submit order
+events.on('order:submit', () => {
+	modal.render({
+		content: contacts.render({
+			email: '',
+			phone: '',
+			valid: appData.isContactsValid(),
+			errors: [],
+		}),
+	});
+});
+
+// placing an order
+const contacts = new Contacts(cloneTemplate(contactsTemplate), events, {
+	onClick: () => {
+		appData.createOrder();
+		api.orderItems(appData.order).catch((error) => console.error(error));
+	},
+});
+
+// listening changes in contacts
+events.on(/^contacts\..*:change/, () => {
+	appData.setPhone(contacts.phone);
+	appData.setEmail(contacts.email);
+	contacts.setNextToggle(appData.isContactsValid());
+	appData.isContactsValid();
+});
+
+// clicking submit contacts
+events.on('contacts:submit', () => {
+	const success = new Success(cloneTemplate(successTemplate), {
+		onClick: () => {
+			events.emit('items:changed');
+			modal.close();
+		},
+	});
+	modal.render({
+		content: success.render({
+			totalPrice: appData.getTotal(),
+		}),
+	});
+});
+
+// open close modal window
+events.on('modal:open', () => (page.locked = true));
+events.on('modal:close', () => (page.locked = false));
+
+// updating cart counter in header on main
 events.on('cart:updateCounter', (count: TUpdateCounter) => {
 	page.cartCounter = count;
 });
 
+// fetch items
 api
 	.getCatalogList()
 	.then(appData.setCatalog.bind(appData))

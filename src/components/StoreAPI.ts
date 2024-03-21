@@ -1,7 +1,13 @@
-import { ICatalogItem, ApiPostMethods, ApiListResponse, Url } from '../types';
-import { TOrder } from './Order';
+import {
+	ICatalogItem,
+	ApiPostMethods,
+	ApiListResponse,
+	Url,
+	TOrder,
+	TOrderResult,
+} from '../types';
 
-export interface IStoreAPI {
+interface IStoreAPI {
 	url: Url;
 	options: RequestInit;
 	handleResponse: (response: Response) => Promise<object>;
@@ -68,8 +74,3 @@ export class StoreAPI implements IStoreAPI {
 		return this.post('/order', order).then((data: TOrderResult) => data);
 	}
 }
-
-export type TOrderResult = {
-	id: string;
-	total: number;
-};

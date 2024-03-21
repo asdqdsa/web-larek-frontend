@@ -1,19 +1,6 @@
-import { EventEmitter, IEvents } from './base/events';
 import { ensureElement } from '../utils/utils';
-import { Form } from './Form';
 import { Component } from './base/Component';
-
-export type TSuccessForm = {
-	totalPrice: number;
-};
-
-export type TSuccessActions = {
-	onClick: () => void;
-};
-
-export interface ISuccessView {
-	totalPrice: number;
-}
+import { ISuccessView, TSuccessActions, TSuccessForm } from '../types';
 
 export class Success extends Component<TSuccessForm> implements ISuccessView {
 	protected _close: HTMLElement;

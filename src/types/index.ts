@@ -1,4 +1,15 @@
-// export type IItem =
+// API
+// types for
+export type Url = {
+	images: string;
+	items: string;
+};
+
+export type ApiPostMethods = 'POST' | 'PUT';
+export type ApiListResponse<Type> = {
+	total: number;
+	items: Type[];
+};
 
 export interface ICatalogItem {
 	id: string;
@@ -17,101 +28,187 @@ export interface ICartItem {
 	status: boolean;
 }
 
-// types for API
-export type Url = {
-	images: string;
-	items: string;
-};
-
-export type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
-export type ApiListResponse<Type> = {
+// StoreAPI API
+export type TOrderResult = {
+	id: string;
 	total: number;
-	items: Type[];
 };
 
-// types for AppData
+// Model
+// AppData types
+export type TOrder = {
+	items: string[];
+	total: number;
+} & TOrderForm &
+	TContactsForm;
+
+export type TFormErrors = Partial<Record<keyof TOrder, string>>;
+
+export type TPaymentState = {
+	payment: null | string;
+	address: null | string;
+};
+
+export type TContactsState = {
+	email: null | string;
+	phone: null | string;
+};
+
 export interface IAppState {
-	catalog: ICatalogItem[];
+	cartItems: ICartItem[];
+	cartState: Set<string>;
+	paymentState: TPaymentState;
+	contactsState: TContactsState;
+	setCatalog(items: ICatalogItem[]): void;
+	setAddress(address: string): void;
+	setPaymentType(paymentType: string): void;
+	setPhone(phone: string): void;
+	setEmail(email: string): void;
+	isOrderValid(): boolean;
+	isContactsValid(): boolean;
+	createOrder(): void;
 }
 
-export type CatalogChangeEvent = {
-	catalog: ICatalogItem[];
+// View
+// Order View
+export interface IOrderView {
+	address: string;
+	setNextToggle(state: boolean): void;
+	setStyleBorder(paymentType: string): void;
+}
+
+export type TOrderForm = {
+	address: string;
+	payment: string | null;
 };
 
-// types for card
-export interface ICardActions {
+export type TOrderActions = {
+	onClickPayment: (event: Event) => void;
+};
+
+// Contacts View
+export interface IContactsFormView {
+	email: string;
+	phone: string;
+	setNextToggle(state: boolean): void;
+}
+
+export type TContactsForm = {
+	email: string;
+	phone: string;
+};
+
+export type TContactsActions = {
+	onClick: () => void;
+};
+
+// Card View
+export type TCardActions = {
 	onClick: (event: MouseEvent) => void;
-}
-
-export type CatalogItemStatus = {
-	status: string;
-	label: string;
 };
 
-export interface ICard {
-	// description: string;
-	image?: string;
+export type TCard = {
 	title: string;
-	category?: string;
+	image?: string;
 	price: number | null;
+	category?: string;
 	description?: string;
+	button: HTMLButtonElement;
 	statusBtn: boolean;
-	// status: T;
+};
+
+export interface ICardView {
+	title: string;
+	image?: string;
+	price: string;
+	category?: string;
+	description?: string;
+	button: HTMLButtonElement;
+	statusBtn: boolean;
+	setCategoryCard(value: string): void;
 }
 
-// types for Page
-export interface IPage {
-	// counter: number;
-	catalog: HTMLElement[];
-	locked: boolean;
-}
-
-// events enum
-export enum Events {
-	ITEMS_CHANGE = 'items:changed',
-	PREVIEW_CHANGE = 'preview:changed',
-	PREVIEW_PROCESS = 'preview:process',
-
-	CARD_SELECT = 'card:select',
-	CARD_REMOVE = 'card:remove',
-
-	ORDER_OPEN = 'order:open',
-	ORDER_ADDRESS = 'order:submit',
-	ORDER_CONTACTS = 'contacts:submit',
-
-	SHOPCART_OPEN = 'cart:open',
-	SHOPCART_PREVIEW = 'cart:preview',
-	SHOPTCART_CHANGE = 'cart:changed',
-	SHOPCART_PRICE_UPD = 'cart:updatePrice',
-	SHOPCART_COUNT_UPD = 'cart:updateCounter',
-	ORDER_CHANGE_ADDRESS = 'order.address:change',
-
-	MODAL_OPEN = 'modal:open',
-	MODAL_CLOSE = 'modal:close',
-
-	REGEX_CHANGE = `/^contacts..*:change/`, // ??
-}
-
-export enum CategoryCard {
-	SOFT = 'софт-скил',
-	OTHER = 'другое',
-	MISC = 'дополнительное',
-	BUTTON = 'кнопка',
-	HARD = 'хард-скил',
-}
-
-export const CategoryCardDict: Map<CategoryCard, string> = new Map([
-	[CategoryCard.SOFT, 'card__category_soft'],
-	[CategoryCard.HARD, 'card__category_hard'],
-	[CategoryCard.BUTTON, 'card__category_button'],
-	[CategoryCard.OTHER, 'card__category_other'],
-	[CategoryCard.MISC, 'card__category_additional'],
-]);
-
-export const dictCategoryCard: Map<string, string> = new Map([
+export const TDictCategoryCard: Map<string, string> = new Map([
 	['софт-скил', 'card__category_soft'],
 	['другое', 'card__category_hard'],
 	['дополнительное', 'card__category_button'],
 	['кнопка', 'card__category_other'],
 	['хард-скил', 'card__category_additional'],
 ]);
+
+// ShoppingCart View
+export type TShoppingCart = {
+	items: HTMLElement[];
+	price: number;
+	list: HTMLElement[];
+};
+
+export type TShopCartActions = {
+	onClick: (event: MouseEvent) => void;
+};
+
+export interface IShoppingCartView {
+	items: HTMLElement[];
+	price: number;
+	setOrderButton(value: number): void;
+	setOrderIndex(): void;
+}
+
+// Page View
+export type TPage = {
+	catalog: HTMLElement[];
+	locked: boolean;
+	cartCounter: TUpdateCounter;
+};
+
+export type TUpdateCounter = {
+	count: number;
+};
+
+export type TPageActions = {
+	onClick: (event: MouseEvent) => void;
+};
+
+export interface IPageView {
+	catalog: HTMLElement[];
+	cartCounter: TUpdateCounter;
+	locked: boolean;
+}
+
+// Modal View
+export type TModalData = {
+	content: HTMLElement;
+};
+
+export interface IModalView {
+	content: HTMLElement;
+	open(): void;
+	close(): void;
+	toggleCartBtn(state: boolean): void;
+	render(data: TModalData): HTMLElement;
+}
+
+// Form View
+export type TFormState = {
+	valid: boolean;
+	errors: string[];
+};
+
+export interface IFormView<T> {
+	valid: boolean;
+	errors: string;
+	render(state: Partial<T> & TFormState): HTMLFormElement;
+}
+
+// Success View
+export type TSuccessForm = {
+	totalPrice: number;
+};
+
+export type TSuccessActions = {
+	onClick: () => void;
+};
+
+export interface ISuccessView {
+	totalPrice: number;
+}

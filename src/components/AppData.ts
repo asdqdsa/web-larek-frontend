@@ -1,35 +1,17 @@
-import { ICatalogItem, IAppState, ICartItem } from '../types';
-import { TOrder, TOrderForm, TPayment } from './Order';
+import {
+	ICatalogItem,
+	ICartItem,
+	TPaymentState,
+	TContactsState,
+	TOrder,
+	TFormErrors,
+	IAppState,
+} from '../types';
 import { Model } from './base/Model';
+import { IEvents } from './base/events';
 
-export type TFormErrors = Partial<Record<keyof TOrder, string>>;
-
-export class CatalogItem extends Model<ICatalogItem> {
-	id: string;
-	description: string;
-	image: string;
-	title: string;
-	category: string;
-	price: number | null;
-	status: boolean;
-}
-
-export class CartList extends Model<ICartItem> {
-	id: string;
-	title: string;
-	price: number | null;
-	status: boolean;
-}
-
-export type TPaymentState = {
-	payment?: null | string;
-	address?: null | string;
-};
-
-export class AppState extends Model<IAppState> {
+export class AppState implements IAppState {
 	catalog: ICatalogItem[];
-	cartList: ICartItem[];
-	preview: string | null;
 	cartItems: ICartItem[];
 	total: number;
 	order: TOrder = {
@@ -41,36 +23,32 @@ export class AppState extends Model<IAppState> {
 		items: [],
 	};
 	formErrors: TFormErrors = {};
+	cartState: Set<string>;
+	paymentState: TPaymentState;
+	contactsState: TContactsState;
 
-	setCatalog(items: ICatalogItem[]) {
+	constructor(protected events: IEvents) {
+		this.cartState = new Set();
+		this.paymentState = { payment: null, address: null };
+		this.contactsState = { email: null, phone: null };
+	}
+
+	setCatalog(items: ICatalogItem[]): void {
 		this.catalog = items.map((item) => {
 			item.status = false;
 			return new CatalogItem(item, this.events);
 		});
-		this.emitChanges('items:changed', { catalog: this.catalog });
+		this.events.emit('items:changed', { catalog: this.catalog });
 	}
 
-	// remove
-	// setPreview(item: ICatalogItem) {
-	// this.preview = item.id;
-	// this.cartState.push(item.id);
-	// console.log(item.status, 'itemstatusappdata');
-
-	// if (!item.status) this.emitChanges('preview:changed', item);
-	// else this.emitChanges('preview:process', item);
-
-	// 	this.emitChanges('preview:changed', item);
-	// }
-
-	addItemCart(item: ICatalogItem) {
+	addItemCart(item: ICatalogItem): void {
 		if (!this.cartState.has(item.id)) {
 			this.cartState.add(item.id);
 			item.status = true;
-		} else {
-			console.error('your item is allready in the cart');
-		}
-		this.emitChanges('preview:changed', item);
-		this.emitChanges('cart:updateCounter', {
+		} else console.error('your item is allready in the cart');
+
+		this.events.emit('preview:changed', item);
+		this.events.emit('cart:updateCounter', {
 			count: this.cartState.size,
 		});
 	}
@@ -80,11 +58,7 @@ export class AppState extends Model<IAppState> {
 			[...this.cartState].includes(item.id)
 		);
 		this.getTotal();
-		this.emitChanges('cart:preview', { count: this.cartState.size });
-	}
-
-	setCartList(items: ICartItem[]) {
-		this.cartList = items.map((item) => new CartList(item, this.events));
+		this.events.emit('cart:preview', { count: this.cartState.size });
 	}
 
 	getTotal(): number {
@@ -98,54 +72,29 @@ export class AppState extends Model<IAppState> {
 		item.status = false;
 		this.cartState.delete(item.id);
 		this.getTotal();
-		this.emitChanges('cart:open');
-		this.emitChanges('cart:updateCounter', {
+		this.events.emit('cart:open');
+		this.events.emit('cart:updateCounter', {
 			count: this.cartState.size,
 		});
 	}
 
-	validateOrder() {
-		const errors: typeof this.formErrors = {};
-		if (!this.order.address) {
-			errors.email = 'Необходимо указать адрес';
-		}
-		if (!this.order.payment) {
-			errors.phone = 'Необходимо указать тип оплаты';
-		}
-		this.formErrors = errors;
-		this.events.emit('formErrors:change', this.formErrors);
-		return Object.keys(errors).length === 0;
-	}
-
-	isAddressValid(input: any) {
-		return input.value ? true : false;
-	}
-
-	setAddress(address: string) {
+	setAddress(address: string): void {
 		this.paymentState.address = address;
-		this.order.address = address;
 	}
 
-	setPaymentType(paymentType: string) {
+	setPaymentType(paymentType: string): void {
 		this.paymentState.payment = paymentType;
-		this.order.payment = paymentType;
 	}
 
-	setPhone(phone: string) {
+	setPhone(phone: string): void {
 		this.contactsState.phone = phone;
-		this.order.phone = phone;
 	}
 
-	setEmail(email: string) {
+	setEmail(email: string): void {
 		this.contactsState.email = email;
-		this.order.email = email;
 	}
 
-	isPayementPicked() {
-		return this.paymentState.payment ? true : false;
-	}
-
-	isOrderValid() {
+	isOrderValid(): boolean {
 		const errors: typeof this.formErrors = {};
 		if (!this.paymentState.address) {
 			errors.address = 'Необходимо указать адрес';
@@ -158,7 +107,7 @@ export class AppState extends Model<IAppState> {
 		return Object.keys(errors).length === 0;
 	}
 
-	isContactsValid() {
+	isContactsValid(): boolean {
 		const errors: typeof this.formErrors = {};
 		if (!this.contactsState.email) {
 			errors.email = 'Необходимо указать почту';
@@ -181,7 +130,16 @@ export class AppState extends Model<IAppState> {
 		return setPriceless;
 	}
 
-	createOrder() {
+	clearAllItems(): void {
+		this.cartItems.forEach((item) => (item.status = false));
+		this.cartState.clear();
+		this.events.emit('cart:updateCounter', {
+			count: this.cartState.size,
+		});
+		this.events.emit('items:changed');
+	}
+
+	createOrder(): void {
 		const setPriceless = this.getPricelessItems();
 		this.order.items = Array.from(this.cartState).filter(
 			(id) => !setPriceless.has(id)
@@ -193,13 +151,21 @@ export class AppState extends Model<IAppState> {
 		this.order.total = this.getTotal();
 		this.clearAllItems();
 	}
+}
 
-	clearAllItems() {
-		this.cartItems.forEach((item) => (item.status = false));
-		this.cartState.clear();
-		this.emitChanges('cart:updateCounter', {
-			count: this.cartState.size,
-		});
-		this.events.emit('items:changed');
-	}
+export class CatalogItem extends Model<ICatalogItem> {
+	id: string;
+	description: string;
+	image: string;
+	title: string;
+	category: string;
+	price: number | null;
+	status: boolean;
+}
+
+export class CartList extends Model<ICartItem> {
+	id: string;
+	title: string;
+	price: number | null;
+	status: boolean;
 }

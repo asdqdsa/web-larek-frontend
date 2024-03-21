@@ -1,19 +1,9 @@
 import { Component } from './base/Component';
 import { IEvents } from './base/events';
 import { ensureElement } from '../utils/utils';
+import { IFormView, TFormState } from '../types';
 
-export type IFormState = {
-	valid: boolean;
-	errors: string[];
-};
-
-export interface IFormView<T> {
-	valid: boolean;
-	errors: string;
-	render(state: Partial<T> & IFormState): HTMLFormElement;
-}
-
-export class Form<T> extends Component<IFormState> implements IFormView<T> {
+export class Form<T> extends Component<TFormState> implements IFormView<T> {
 	protected _submit: HTMLButtonElement;
 	protected _errors: HTMLElement;
 
@@ -54,7 +44,7 @@ export class Form<T> extends Component<IFormState> implements IFormView<T> {
 		this.setText(this._errors, value);
 	}
 
-	render(state: Partial<T> & IFormState) {
+	render(state: Partial<T> & TFormState) {
 		const { valid, errors, ...inputs } = state;
 		super.render({ valid, errors });
 		Object.assign(this, inputs);

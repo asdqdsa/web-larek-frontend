@@ -1,21 +1,7 @@
 // import { IOrderForm } from '../types';
-import { EventEmitter, IEvents } from './base/events';
-import { ensureElement } from '../utils/utils';
+import { IContactsFormView, TContactsActions, TContactsForm } from '../types';
+import { IEvents } from './base/events';
 import { Form } from './Form';
-
-export interface IContactsFormView {
-	email: string;
-	phone: string;
-}
-
-export type TContactsForm = {
-	email: string;
-	phone: string;
-};
-
-export type TContactsActions = {
-	onClick: () => void;
-};
 
 export class Contacts extends Form<TContactsForm> implements IContactsFormView {
 	protected _close: HTMLElement;
@@ -38,8 +24,7 @@ export class Contacts extends Form<TContactsForm> implements IContactsFormView {
 	}
 
 	set phone(value: string) {
-		(this.container.elements.namedItem('phone') as HTMLInputElement).value =
-			value;
+		this.container.phone.value = value;
 	}
 
 	get email() {
@@ -47,16 +32,10 @@ export class Contacts extends Form<TContactsForm> implements IContactsFormView {
 	}
 
 	set email(value: string) {
-		(this.container.elements.namedItem('email') as HTMLInputElement).value =
-			value;
+		this.container.email.value = value;
 	}
 
-	setNextEnable(field: string, state: boolean) {
-		// console.log(state);
+	setNextToggle(state: boolean) {
 		this.valid = state;
-		// if (!state) {
-		// 	this.errors = 'Укажите адрес/способ оплаты';
-		// this.events.emit('formErrors:change', this.formErrors);
-		// } else this.errors = '';
 	}
 }

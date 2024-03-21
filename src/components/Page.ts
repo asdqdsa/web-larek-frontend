@@ -1,27 +1,6 @@
 import { Component } from './base/Component';
-import { IEvents } from './base/events';
 import { ensureElement } from '../utils/utils';
-// import { IPage } from '../types';
-
-export type TPage = {
-	catalog: HTMLElement[];
-	locked: boolean;
-	cartCounter: TUpdateCounter;
-};
-
-export type TUpdateCounter = {
-	count: number;
-};
-
-export type TPageActions = {
-	onClick: (event: MouseEvent) => void;
-};
-
-export interface IPageView {
-	catalog: HTMLElement[];
-	cartCounter: TUpdateCounter;
-	locked: boolean;
-}
+import { IPageView, TPage, TPageActions, TUpdateCounter } from '../types';
 
 export class Page extends Component<TPage> implements IPageView {
 	protected _catalog: HTMLElement;

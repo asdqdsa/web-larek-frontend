@@ -1,26 +1,9 @@
 import { Component } from './base/Component';
 import { createElement, ensureElement } from '../utils/utils';
-import { EventEmitter } from './base/events';
-
-export type IShoppingCart = {
-	items: HTMLElement[];
-	price: number;
-	list: HTMLElement[];
-};
-
-export type IShopCartActions = {
-	onClick: (event: MouseEvent) => void;
-};
-
-export interface IShoppingCartView {
-	items: HTMLElement[];
-	price: number;
-	setOrderButton(value: number): void;
-	setOrderIndex(): void;
-}
+import { IShoppingCartView, TShopCartActions, TShoppingCart } from '../types';
 
 export class ShoppingCart
-	extends Component<IShoppingCart>
+	extends Component<TShoppingCart>
 	implements IShoppingCartView
 {
 	protected _items: HTMLElement;
@@ -28,7 +11,7 @@ export class ShoppingCart
 	protected _button: HTMLElement;
 	protected _itemIndex: HTMLElement;
 
-	constructor(container: HTMLElement, actions: IShopCartActions) {
+	constructor(container: HTMLElement, actions: TShopCartActions) {
 		super(container);
 		this._items = ensureElement<HTMLElement>('.basket__list', this.container);
 		this._price = this.container.querySelector('.basket__price');
