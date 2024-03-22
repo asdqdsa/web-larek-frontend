@@ -28,7 +28,7 @@ export interface ICartItem {
 	status: boolean;
 }
 
-// StoreAPI API
+// StoreAPI
 export type TOrderResult = {
 	id: string;
 	total: number;

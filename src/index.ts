@@ -22,9 +22,6 @@ const page = new Page(document.body, {
 });
 const modal = new Modal(ensureElement<HTMLElement>('#modal-container'), events);
 
-// debag
-events.onAll(({ eventName, data }) => console.log(eventName, data));
-
 // templates
 const cardCatalogTemplate = ensureElement<HTMLTemplateElement>('#card-catalog');
 const cardPreviewTemplate = ensureElement<HTMLTemplateElement>('#card-preview');
@@ -149,7 +146,7 @@ events.on('contactsErrors:change', (errors: Record<string, string>) => {
 	else order.errors = '';
 });
 
-// clickin submit order
+// clicking submit order
 events.on('order:submit', () => {
 	modal.render({
 		content: contacts.render({

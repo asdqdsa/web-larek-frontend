@@ -87,6 +87,25 @@ export class Card extends Component<TCard> implements ICardView {
 		this.setDescription(this._description, value);
 	}
 
+	protected setImage(element: HTMLImageElement, src: string, alt?: string) {
+		if (element) {
+			element.src = src;
+			if (alt) element.alt = alt;
+		}
+	}
+
+	protected setPrice(element: HTMLSpanElement, value: unknown) {
+		if (element) element.textContent = String(value);
+	}
+
+	protected setCategory(element: HTMLSpanElement, value: unknown) {
+		if (element) element.textContent = String(value);
+	}
+
+	protected setDescription(element: HTMLSpanElement, value: unknown) {
+		if (element) element.textContent = String(value);
+	}
+
 	setCategoryCard(value: string) {
 		this.addStyleClass(this._category, TDictCategoryCard.get(value));
 	}
