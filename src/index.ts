@@ -22,6 +22,9 @@ const page = new Page(document.body, {
 });
 const modal = new Modal(ensureElement<HTMLElement>('#modal-container'), events);
 
+// debag
+events.onAll(({ eventName, data }) => console.log(eventName, data));
+
 // templates
 const cardCatalogTemplate = ensureElement<HTMLTemplateElement>('#card-catalog');
 const cardPreviewTemplate = ensureElement<HTMLTemplateElement>('#card-preview');
@@ -53,29 +56,21 @@ events.on('items:changed', () => {
 
 // show item when selected
 events.on('preview:changed', (item: ICatalogItem) => {
-	const showItem = (item: ICatalogItem) => {
-		const card = new CatalogItem(cloneTemplate(cardPreviewTemplate), {
-			onClick: () => events.emit('cart:changed', item),
-		});
-		card.button.disabled = item.status;
-		card.setCategoryCard(item.category);
-		modal.render({
-			content: card.render({
-				title: item.title,
-				image: item.image,
-				category: item.category,
-				price: item.price,
-				description: item.description,
-				statusBtn: item.status,
-			}),
-		});
-	};
-	if (item) {
-		api
-			.getCatalogItem(item.id)
-			.then(() => showItem(item))
-			.catch((err) => console.error(err));
-	} else modal.close();
+	const card = new CatalogItem(cloneTemplate(cardPreviewTemplate), {
+		onClick: () => events.emit('cart:changed', item),
+	});
+	card.button.disabled = item.status;
+	card.setCategoryCard(item.category);
+	modal.render({
+		content: card.render({
+			title: item.title,
+			image: item.image,
+			category: item.category,
+			price: item.price,
+			description: item.description,
+			statusBtn: item.status,
+		}),
+	});
 });
 
 // show cart
@@ -170,7 +165,17 @@ events.on('order:submit', () => {
 const contacts = new Contacts(cloneTemplate(contactsTemplate), events, {
 	onClick: () => {
 		appData.createOrder();
-		api.orderItems(appData.order).catch((error) => console.error(error));
+		api
+			.orderItems(appData.order)
+			.then((response) => {
+				console.log(response);
+				appData.clearAllItems();
+				events.emit('success');
+			})
+			.catch((error) => {
+				events.emit('cart:open');
+				console.error(error);
+			});
 	},
 });
 
@@ -182,8 +187,8 @@ events.on(/^contacts\..*:change/, () => {
 	appData.isContactsValid();
 });
 
-// clicking submit contacts
-events.on('contacts:submit', () => {
+// listening for successful server response
+events.on('success', () => {
 	const success = new Success(cloneTemplate(successTemplate), {
 		onClick: () => {
 			events.emit('items:changed');

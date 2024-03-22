@@ -149,7 +149,6 @@ export class AppState implements IAppState {
 		this.order.payment = this.paymentState.payment;
 		this.order.address = this.paymentState.address;
 		this.order.total = this.getTotal();
-		this.clearAllItems();
 	}
 }
 

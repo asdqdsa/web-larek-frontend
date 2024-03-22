@@ -1,5 +1,5 @@
 // API
-// types for
+// API types
 export type Url = {
 	images: string;
 	items: string;

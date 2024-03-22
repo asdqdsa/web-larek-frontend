@@ -14,7 +14,6 @@ interface IStoreAPI {
 	get: (uri: string) => Promise<object>;
 	post: (uri: string, data: object, method: ApiPostMethods) => Promise<object>;
 	getCatalogList: () => Promise<ICatalogItem[]>;
-	getCatalogItem: (id: string) => Promise<ICatalogItem>;
 }
 
 export class StoreAPI implements IStoreAPI {
@@ -61,13 +60,6 @@ export class StoreAPI implements IStoreAPI {
 				image: this.url.images + item.image,
 			}));
 		});
-	}
-
-	getCatalogItem(id: string): Promise<ICatalogItem> {
-		return this.get(`/product/${id}`).then((item: ICatalogItem) => ({
-			...item,
-			image: this.url.images + item.image,
-		}));
 	}
 
 	orderItems(order: TOrder): Promise<TOrderResult> {

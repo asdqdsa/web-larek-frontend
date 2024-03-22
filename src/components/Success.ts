@@ -25,6 +25,6 @@ export class Success extends Component<TSuccessForm> implements ISuccessView {
 	}
 
 	set totalPrice(value: number) {
-		this.setText(this._totalPrice, value);
+		this.setText(this._totalPrice, `Списано ${value} синапсов`);
 	}
 }

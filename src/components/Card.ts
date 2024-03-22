@@ -67,8 +67,8 @@ export class Card extends Component<TCard> implements ICardView {
 	}
 
 	set price(value: string) {
-		if (value === null) this.setPrice(this._price, 'Priceless');
-		else this.setPrice(this._price, value + ' синапсов');
+		if (value === null) this.setPrice(this._price, 'Бесценно');
+		else this.setPrice(this._price, `${value} синапсов`);
 	}
 
 	get category(): string {
